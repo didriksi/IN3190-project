@@ -142,3 +142,6 @@ dmypy.json
 *.cb
 *.cb2
 .*.lb
+
+# Mac specific files
+.DS_Store
