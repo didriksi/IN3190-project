@@ -151,3 +151,6 @@ dmypy.json
 plots/
 tasks/
 data/
+
+# zip raw file
+*.zip
