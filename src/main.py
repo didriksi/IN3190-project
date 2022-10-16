@@ -23,6 +23,9 @@ def parse_arguments(argv=None):
     parser.add_argument("--plot-map", action="store_true",
                         help="Plot a map of all the locations measurements "\
                              "were made.")
+    parser.add_argument("--plot-distances", action="store_true",
+                        help="Get the distances between all the stations and "\
+                             "Hunga Tonga.")
 
     return parser.parse_args(argv)
 
@@ -41,6 +44,11 @@ def main():
                                               axis=1)
         plot.geography(constants.TONGA_COORDINATES, stations_coordinates, 
                        os.path.join(constants.ROOT_DIR, "plots", "map.pdf"))
+    if args.plot_distances:
+        data = np.load(processed_data_filename)
+        distances = data["distances"]
+        plot.distances(distances)
+
 
 
 if __name__ == "__main__":
