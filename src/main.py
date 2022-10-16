@@ -26,6 +26,9 @@ def parse_arguments(argv=None):
     parser.add_argument("--plot-distances", action="store_true",
                         help="Get the distances between all the stations and "\
                              "Hunga Tonga.")
+    parser.add_argument("--plot-fir", action="store_true",
+                        help="Plot the three given filter input responses, "\
+                             "h1, h2 and h3.")
 
     return parser.parse_args(argv)
 
@@ -47,8 +50,12 @@ def main():
     if args.plot_distances:
         data = np.load(processed_data_filename)
         distances = data["distances"]
-        plot.distances(distances)
-
+        plot.distances(distances,
+                       os.path.join(constants.ROOT_DIR, "plots", "distances.pdf"))
+    if args.plot_fir:
+        plot.input_response([constants.h1, constants.h2, constants.h3],
+                            ["$h_1$", "$h_2$", "$h_3$"],
+                            os.path.join(constants.ROOT_DIR, "plots", "fir.pdf"))
 
 
 if __name__ == "__main__":

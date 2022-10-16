@@ -2,7 +2,7 @@
 
 
 ### List of all plots and data used directly in project.tex ###
-TASKS = tasks/venv tasks/unzip tasks/parse_data tasks/plot_map tasks/plot_distances
+TASKS = tasks/venv tasks/unzip tasks/parse_data tasks/plot_map tasks/plot_distances tasks/plot_fir
 
 ### Files used for compiling latex ###
 TEX_FILES = $(wildcard latex/*.tex)
@@ -81,3 +81,7 @@ tasks/plot_map: tasks/parse_data plots $(PYTHON_FILES)
 tasks/plot_distances: tasks/parse_data plots $(PYTHON_FILES)
 	source venv/bin/activate; python src/main.py --plot-distances
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_distances
+
+tasks/plot_fir: tasks/parse_data plots $(PYTHON_FILES)
+	source venv/bin/activate; python src/main.py --plot-fir
+	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_fir
