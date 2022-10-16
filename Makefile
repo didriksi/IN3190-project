@@ -2,7 +2,7 @@
 
 
 ### List of all plots and data used directly in project.tex ###
-TASKS = tasks/venv tasks/unzip tasks/parse_data tasks/plot_map tasks/plot_distances tasks/plot_fir
+TASKS = tasks/venv tasks/unzip tasks/parse_data tasks/plot_map tasks/plot_distances tasks/plot_fir tasks/plot_frequency_spectrum
 
 ### Files used for compiling latex ###
 TEX_FILES = $(wildcard latex/*.tex)
@@ -85,3 +85,7 @@ tasks/plot_distances: tasks/parse_data plots $(PYTHON_FILES)
 tasks/plot_fir: tasks/parse_data plots $(PYTHON_FILES)
 	source venv/bin/activate; python src/main.py --plot-fir
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_fir
+
+tasks/plot_frequency_spectrum: tasks/parse_data plots $(PYTHON_FILES)
+	source venv/bin/activate; python src/main.py --plot-freq-spec
+	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_frequency_spectrum

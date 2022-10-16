@@ -7,6 +7,7 @@ import numpy as np
 import constants
 import process_data
 import plot
+import signal_processing
 
 
 def parse_arguments(argv=None):
@@ -29,6 +30,9 @@ def parse_arguments(argv=None):
     parser.add_argument("--plot-fir", action="store_true",
                         help="Plot the three given filter input responses, "\
                              "h1, h2 and h3.")
+    parser.add_argument("--plot-freq-spec", action="store_true",
+                        help="Plot the absolute values of the frequency "\
+                             "spectrums from h1, h2 and h3.")
 
     return parser.parse_args(argv)
 
@@ -46,17 +50,20 @@ def main():
                                                lons[:, np.newaxis]),
                                               axis=1)
         plot.geography(constants.TONGA_COORDINATES, stations_coordinates, 
-                       os.path.join(constants.ROOT_DIR, "plots", "map.pdf"))
+                       os.path.join(constants.PLOTS_DIR, "map.pdf"))
     if args.plot_distances:
         data = np.load(processed_data_filename)
         distances = data["distances"]
         plot.distances(distances,
-                       os.path.join(constants.ROOT_DIR, "plots", "distances.pdf"))
+                       os.path.join(constants.PLOTS_DIR, "distances.pdf"))
     if args.plot_fir:
         plot.input_response([constants.h1, constants.h2, constants.h3],
                             ["$h_1$", "$h_2$", "$h_3$"],
-                            os.path.join(constants.ROOT_DIR, "plots", "fir.pdf"))
-
+                            os.path.join(constants.PLOTS_DIR, "fir.pdf"))
+    if args.plot_freq_spec:
+        plot.frequency_spectrum([constants.h1, constants.h2, constants.h3],
+                                ["$H_1$", "$H_2$", "$H_3$"], side_by_side=True,
+                                filename=os.path.join(constants.PLOTS_DIR, "freq_spec.pdf"))
 
 if __name__ == "__main__":
     main()

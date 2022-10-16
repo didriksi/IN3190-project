@@ -5,6 +5,8 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
+import signal_processing
+
 def geography(center_coordinates, other_coordinates, filename=None):
     """Plot a map of the world with some coordinates marked.
 
@@ -121,6 +123,57 @@ def input_response(fir, fir_label=None, filename=None):
     ax.set_xlabel("$n$")
     ax.set_ylabel("$h$")
     plt.legend()
+
+    if filename is None:
+        plt.show()
+    else:
+        plt.savefig(filename)
+        plt.close()
+
+
+def frequency_spectrum(fir, fir_label=None, side_by_side=False, filename=None):
+    """Plot the DTFT-transformations of filtered input response (FIR).
+
+    Arguments:
+        fir: Array with the filter input response(s). If either iterable of
+             1-d arrays, or a 2-d array, several plots are made.
+        title: Title of plot. 'Filter input responses (FIR)' by default.
+        fir_label: Either a single string or a list of strings with labels for
+                   the response or responses. None by default, meaning no label
+                   is given.
+        side_by_side: Boolean indicating whether to plot all the results in the
+                      different axes side by side or in the same (False, default).
+        filename: Path to location to save resulting image in. If None, as 
+                  default, it isn't saved just shown.
+        
+    """
+    if isinstance(fir, np.ndarray) and fir.ndims == 1:
+        fir = [fir]
+        fir_label = fir_label if (fir_label is None) else [fir_label]
+
+    dtft_fir = map(lambda h: np.abs(signal_processing.dtft(h)[0]), fir)
+
+    fig, axs = plt.subplots(1, 1 if not side_by_side else len(fir),
+                            figsize=(7, 4), sharey=side_by_side)
+    axs_iter = [axs]*len(fir) if isinstance(axs, matplotlib.axes.Axes) else axs.flat
+
+    for i, (single_dtft_fir, ax) in enumerate(zip(dtft_fir, axs_iter)):
+        if fir_label is not None:
+            if side_by_side:
+                ax.plot(single_dtft_fir)
+                ax.set_title(fir_label[i])
+            else:
+                ax.plot(single_dtft_fir, label=fir_label[i])
+                ax.legend()
+        else:
+            ax.plot(single_dtft_fir)
+
+        ax.set_xlabel("$j$")
+
+    axs_iter[0].set_ylabel("$|H(e^{j \\omega})|$")
+
+    fig.suptitle("Absolute values of the frequency spectrums of the FIRs")
+    
 
     if filename is None:
         plt.show()

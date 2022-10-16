@@ -14,4 +14,23 @@ def convolution(x, h, y_choice=True):
     Return:
         y, and array representing the convolved signal.
     """
-    return np.convolve(x, h, mode=="full" is y_choice else "same")
+    return np.convolve(x, h, mode=="full" if y_choice else "same")
+
+
+def dtft(x, N=None, fs=1):
+    """Discrete time Fourier transform a signal x.
+
+    Arguments:
+        x: An array representing a signal to be transformed.
+        N: Number of points along the unit circle that are output for omega. 
+           None by default, meaning the length of x is used.
+        fs: The sampling frequency. 1 by default.
+
+    Return:
+        The complex valued array X(exp(j*omega)), and the real valued array
+        with with physical frequencies
+    """
+    if N is None:
+        N = len(x)
+
+    return np.fft.fft(x, N), np.fft.rfft(x, N)*fs
