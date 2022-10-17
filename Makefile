@@ -102,5 +102,9 @@ tasks/plot_sections: tasks/parse_data tasks/filter_signals tasks/venv $(PLOT_PYT
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_sections
 
 tasks/mark_arrival_time: tasks/parse_data tasks/filter_signals tasks/venv $(PLOT_PYTHON_FILES)
-	source venv/bin/activate; python src/main.py --mark-arrival-time
+	source venv/bin/activate; python src/main.py --mark-arrival-times
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/mark_arrival_time
+
+tasks/plot_arrival_time: tasks/parse_data tasks/filter_signals tasks/venv $(PLOT_PYTHON_FILES)
+	source venv/bin/activate; python src/main.py --plot-arrival-times
+	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_arrival_time

@@ -66,36 +66,6 @@ def distances(distance_array, filename=None):
         plt.close()
 
 
-def create_figure(nrows=1, ncols=1, height=4, axes_dict=None, title=None):
-    """Create a figure and one ore more axes.
-
-    Mainly used as a soft alias for plt.subplots to be able to make figures in
-    the main.py file one abstraction level up from matplotlib.
-
-    Arguments:
-        nrows: Number of rows to make axes for. 1 by default.
-        ncols: Number of columns to make axes for. 1 by default.
-        height: Height of the plot. Used together with a width of 7. 4 by default.
-        axes_dict: Keywords to set each created Axes object with. None by default
-                   meaning nothing is done to them.
-        title: Suptitle of the figure. None by default meaning no title is set.
-
-    Return:
-        Matplotlib Figure object, and either an array of Axes or a single Axes
-        object.
-    """
-    fig, axs = plt.subplots(nrows, ncols, figsize=(7, height))
-
-    if title is not None:
-        fig.suptitle(title)
-
-    if axes_dict is not None:
-        axs_iter = [axs] if isinstance(axs, matplotlib.Axes) else axs.flat
-        for ax in axs_iter:
-            ax.set(**axes_dict)
-    return fig, axs
-
-
 def input_response(fir, fir_label=None, filename=None):
     """Plot the filtered input response (FIR).
 
@@ -246,3 +216,51 @@ def mark_arrival_time(station_id, signal_times, **signals):
     plt.close()
     validness = 1 if height > 0 else height/np.max(np.abs(signal))
     return arrival_time, validness
+
+
+def arrival_time_vs_distance(distances, arrival_times, alphas=None,
+                             polynomial=None, filename=None):
+    """Plot the arrival time of the signal against distance.
+
+    Arguments:
+        distances: Array of distances between Hunga Tunga and the stations, given
+                   in meters.
+        arrival_times: Manually marked times of arrival of the infrasound wave 
+                       at each station, given in seconds since the UNIX epoch.
+        alphas: Optional array that gives a sort of weight to the markings.
+                   1 means it is completely valid, 0 means it is completely 
+                   invalid, while values in between denote some estimated 
+                   probability of its validity.
+        polynomial: Numpy polynomial fitted to the data. None by default, meaning
+                    not polynomial is plotted.
+        filename: Path to location to save resulting image in. If None, as 
+                  default, it isn't saved just shown.
+    """
+    if alphas is None:
+        alphas = np.ones_like(distances)
+
+    fig, ax = plt.subplots(1, 1, figsize=(7, 4))
+    fig.suptitle("Arrival times for different stations. Alpha denotes confidence in label")
+
+    colors = (np.array([117, 187, 253, 1])/256)[np.newaxis,:].repeat(len(distances), axis=0)
+    colors[:,3] = alphas
+    
+    if polynomial is not None:
+        label = "$" + " + ".join([f"{coef:.4g} \\cdot x^{i}" for i, coef in enumerate(polynomial)]) +  "$"
+        ax.plot(arrival_times, polynomial(arrival_times), label=label)
+
+    ax.scatter(arrival_times, distances, c=colors)
+
+    ticks = np.linspace(np.min(arrival_times), np.max(arrival_times), 8)
+    ticklabels = [datetime.datetime.fromtimestamp(tick).strftime("%H:%M") for tick in ticks]
+    ax.set_xticks(ticks, labels=ticklabels)
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Distance (km)")
+    plt.legend()
+
+    if filename is None:
+        plt.show()
+    else:
+        plt.savefig(filename)
+        plt.close()
+

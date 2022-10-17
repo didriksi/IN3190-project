@@ -39,9 +39,12 @@ def parse_arguments(argv=None):
     parser.add_argument("--plot-sections", action="store_true",
                         help="Plot all the signals from the different stations,"\
                              " filtered through h3.")
-    parser.add_argument("--mark-arrival-time", action="store_true",
+    parser.add_argument("--mark-arrival-times", action="store_true",
                         help="Mark the arrival times of the wave at all the "\
-                             "different stations")
+                             "different stations.")
+    parser.add_argument("--plot-arrival-times", action="store_true",
+                        help="Plot the arrival times of the wave at all the "\
+                             "different stations against their distances.")
     
 
     return parser.parse_args(argv)
@@ -52,6 +55,10 @@ def main():
                                            "processed", "processed.npz")
     convolved_dir = os.path.join(constants.ROOT_DIR, "data", "processed",
                                      "convolved")
+    arrival_times_filename = os.path.join(constants.ROOT_DIR, "data",
+                                          "arrival_times", "arrival_times.npy")
+    valids_filename = os.path.join(constants.ROOT_DIR, "data",
+                                   "arrival_times", "valids.npy")
 
     h_list = [constants.h1, constants.h2, constants.h3]
 
@@ -109,15 +116,12 @@ def main():
         plot_filename = os.path.join(constants.PLOTS_DIR, "sections.pdf")
         plot.sections(signals, times, distances, plot_filename)
     
-    if args.mark_arrival_time:
+    if args.mark_arrival_times:
         processed_data = np.load(processed_data_filename)
         data = processed_data["data"]
         times = processed_data["times"]
 
-        arrival_times_filename = os.path.join(constants.ROOT_DIR, "data",
-                                              "arrival_times", "arrival_times.npy")
-        valids_filename = os.path.join(constants.ROOT_DIR, "data",
-                                       "arrival_times", "valids.npy")
+        
 
         load_convolved = lambda h, station_id: np.load(os.path.join(convolved_dir, f"h{h}_x{station_id:03}.npy"))
         
@@ -141,6 +145,27 @@ def main():
             # Continually save the arrays in case the script crashes
             np.save(arrival_times_filename, arrival_times)
             np.save(valids_filename, valids)
+
+    if args.plot_arrival_times:
+        distances = np.load(processed_data_filename)["distances"]
+        arrival_times = np.load(arrival_times_filename)
+        validness = np.load(valids_filename)
+        weights = np.where(validness < 0, np.maximum(0, 1 + validness), 1)
+            
+        valid_entries = arrival_times > 1.642218e09
+        arrival_times = arrival_times[valid_entries]
+        distances = distances[valid_entries]
+        weights = weights[valid_entries]
+        
+
+        poly = np.polynomial.polynomial.Polynomial.fit(arrival_times, distances,
+                                                       deg=1, w=weights)
+
+        plot_filename = os.path.join(constants.PLOTS_DIR, "arrival_times.pdf")
+        plot.arrival_time_vs_distance(distances, arrival_times, weights,
+                                      poly, plot_filename)
+
+
 
 if __name__ == "__main__":
     main()
