@@ -157,8 +157,6 @@ def main():
 
         poly = np.polynomial.polynomial.Polynomial.fit(arrival_times, distances,
                                                        deg=1, w=weights)
-        print(np.max(arrival_times) - np.min(arrival_times), np.max(distances) - np.min(distances))
-        print((np.max(distances) - np.min(distances)) / (np.max(arrival_times) - np.min(arrival_times)))
 
         plot_filename = os.path.join(constants.PLOTS_DIR, "arrival_times.pdf")
         plot.arrival_time_vs_distance(distances, arrival_times, weights,
