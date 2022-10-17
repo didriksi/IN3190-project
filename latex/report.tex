@@ -1,6 +1,6 @@
 \documentclass[11pt, a4paper]{article}
 \usepackage[utf8]{inputenc}
-\usepackage{amsmath, amsthm, amssymb, amsfonts, tikz, graphicx, listingsutf8, setspace, float}
+\usepackage{amsmath, amsthm, amssymb, amsfonts, tikz, graphicx, listingsutf8, setspace, float, biblatex}
 
 \definecolor{Code}{rgb}{0,0,0}
 \definecolor{Decorators}{rgb}{0.4,0.0,0.4}
@@ -67,6 +67,7 @@ keywordstyle={[3]\color{MoreKeys}\bfseries},
 \lstset{language=Python}
 
 \setlength{\parskip}{.6em}
+\bibliography{report}
 
 \title{IN3190 Midterm project}
 \author{Didrik Sten Ingebrigtsen}
@@ -76,47 +77,58 @@ keywordstyle={[3]\color{MoreKeys}\bfseries},
 
 \maketitle
 
+\begin{figure}
+\includegraphics[width=\textwidth]{../plots/map.pdf}
+\caption{Map of the world, with the red triangle marking the Hunga Tunga volcano, and the blue circles showing the stations where the measurements from this report were made. There seems to be an error in our usage of the `cartopy`-package, rendering the scatter plot wrongly and not putting the station coordinates in correctly.}
+\label{fig:map}
+\end{figure}
+
+\section{Introduction}
+This report is a short study of the propagation of waves originating at the Hunga Tunga volcanos eruption at January 15th 2022. The paper (\cite{nhess}) goes through much of the available open source data retrieved from different measuring stations up to 20,000 km away (fig \ref{fig:map}, fig \ref{fig:distances}), and applies different signal processing techniques to gain insight into the behavior of the waves. We will in this report attempt to reproduce a couple of key points from that paper.
+
+\section{Theory}
+The eruption triggered a series of atmospheric events happening at different frequency scales. Most prominent of these was a very low frequency wave, but there were also infrasound waves that were registered to have circumnavigated the globe up to eight times (\cite{vergoz}).
+
+A key property of waves like the ones discussed here, are their celerity, which is the great circle distance covered by the wave divided by the time spent doing so.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{../plots/distances.pdf}
+\caption{Plot of the distances between all the different stations and Hunga Tunga.}
+\label{fig:distances}
+\end{figure}
+
+\section{Method}
+Across the globe there are publicly available servers where infrasound sensors continually upload their data to \cite{nhess}. We will in this report use a subset of these to try and estimate the celerity of the infrasound wave by attempting to see where the first time this wave passes by the different sensors is, and then using linear regression on those estimates.
+
+In order to easier distinguish the infrasound waves from the rest of the data measured at the stations, we will choose one of three filters provided (fig \ref{fig:fir}, fig \ref{fig:freq_spec}). (\cite{nhess}) has chosen to look for the waves of frequencies between $0.001$ and $2$ Hz, and we will therefore do the same. The filter which produces the FIR $h_2$ is the closest filter to that, so that is the filter we will use.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{../plots/fir.pdf}
+\caption{The Filter Input Responses (FIR) of the three filters given.}
+\label{fig:fir}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{../plots/freq_spec.pdf}
+\caption{The frequency spectrums of the different filters. They reveal that the filter with $h_1$ as its FIR is a lowpass filter, while the one with $h_2$ as its FIR is a bandpass filter filtering out the lowest frequencies, and frequencies above approximately 2 Hertz and the last one is a highpass filter.}
+\label{fig:freq_spec}
+\end{figure}
+
+\section{Results}
+Plotting the filtered sensor data against distance, we get (fig {\ref{fig:sections}). It indicates that there is a rather linear correlation between distance and arrival time, given the interpretation that the high waves we see are the result of the Hunga Tunga eruption. We then go through each of the signals one by one, and estimate the arrival time on each of them. At the same time, we also estimate the certainty of the labels we give. These two traits are then plotted in a new plot with distance against arrival time (fig \ref{fig:arrival_times}). The line running though the plot is a polynomial of first degree gotten from regression. Since it fits well, at least to the big majority of the points we were relatively certain of, the slope of the polynomial is a good estimate of celerity. In our case, it is approximately $270 m/s$. This is in line with (\cite{vergoz}) who state common infrasound wave celerities are between $270$ and $320$ m/s.
+
+\begin{figure}
+\includegraphics[width=\textwidth]{../plots/sections.pdf}
+\caption{A section plot showing the signals from each of the stations, filtered by the bandpass filter with $h_2$ as its FIR. There seams to be a clear correlation between distance between a station and Hunga Tunga, and when the wave arrived there, which sounds reasonable.}
+\label{fig:sections}
+\end{figure}
+
+\begin{figure}
+\includegraphics[width=\textwidth]{../plots/arrival_times.pdf}
+\caption{Plot showing the correlation between arrival time and distance to a station more clearly. Each of the markers here are found by manual investigation, and the opacity of the markers indicate the confidence the labeler has had while labeling. In many of the cases, the signal had noise from other events making it difficult to discern the excact arrival time, or events that might have mistakenly been assumed to be the relevant event, so the noise here is expected.}
+\label{fig:arrival_times}
+\end{figure}
+
+\printbibliography
+
 \end{document}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
