@@ -2,7 +2,7 @@
 """
 import numpy as np
 
-def convolution(x, h, y_choice=True):
+def convolution(x, h, ylen_choice=True):
     """Perform a convolution operation with a filter h and a signal x.
 
     Arguments:
@@ -14,7 +14,7 @@ def convolution(x, h, y_choice=True):
     Return:
         y, and array representing the convolved signal.
     """
-    return np.convolve(x, h, mode=="full" if y_choice else "same")
+    return np.convolve(x, h, mode="full" if ylen_choice else "same")
 
 
 def dtft(x, N=None, fs=1):
@@ -27,10 +27,10 @@ def dtft(x, N=None, fs=1):
         fs: The sampling frequency. 1 by default.
 
     Return:
-        The complex valued array X(exp(j*omega)), and the real valued array
-        with with physical frequencies
+        The complex valued array X(exp(j*omega)), and a tuple with a frequency 
+        array and the real valued array with with amplitude for that frequency
     """
     if N is None:
         N = len(x)
 
-    return np.fft.fft(x, N), np.fft.rfft(x, N)*fs
+    return np.fft.fft(x, N), (fs*np.arange(N)[::2], np.fft.rfft(x, N))

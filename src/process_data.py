@@ -23,7 +23,7 @@ def get_filenames(path):
 
 
 epoch = datetime.utcfromtimestamp(0)
-def unix_time_millis(dt):
+def unix_time(dt):
     return (dt - epoch).total_seconds()
 
 
@@ -47,9 +47,8 @@ def process_data():
             data[i][:len(dataset)] = dataset
 
             starttime_string = file[f"waveforms/{dataset_name}"].attrs.get("starttime")
-            starttime = unix_time_millis(
-                datetime.strptime(starttime_string, "%Y-%m-%dT%H:%M:%S.%fZ")
-                )
+            starttime = unix_time(datetime.strptime(starttime_string,
+                                                    "%Y-%m-%dT%H:%M:%S.%fZ"))
             delta = file[f"waveforms/{dataset_name}"].attrs.get("delta")
             deltas = np.linspace(0, delta*len(dataset), len(dataset))
             times[i][:len(dataset)] = starttime + deltas

@@ -2,11 +2,12 @@
 
 
 ### List of all plots and data used directly in project.tex ###
-TASKS = tasks/venv tasks/unzip tasks/parse_data tasks/plot_map tasks/plot_distances tasks/plot_fir tasks/plot_frequency_spectrum
+TASKS = tasks/venv tasks/unzip tasks/parse_data tasks/plot_map tasks/plot_distances tasks/plot_fir tasks/plot_frequency_spectrum tasks/filter_signals
 
 ### Files used for compiling latex ###
 TEX_FILES = $(wildcard latex/*.tex)
 PYTHON_FILES = $(wildcard src/*.py)
+PLOT_PYTHON_FILES = src/main.py src/plot.py
 
 ### Python runner ###
 PYTHON ?= python3
@@ -25,6 +26,7 @@ data:
 	mkdir data
 	mkdir data/raw
 	mkdir data/processed
+	mkdir data/processed/convolved
 
 ### Compile pdf from LaTeX ###
 report.pdf: $(TASKS) $(TEX_FILES) $(PYTHON_FILES)
@@ -60,6 +62,7 @@ clean:
 
 ### Tasks ###
 tasks/venv: tasks requirements.txt
+	pip install --upgrade pip
 	$(PYTHON) -m venv venv
 	source venv/bin/activate; pip install -r requirements.txt
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/venv
@@ -74,18 +77,26 @@ tasks/parse_data: tasks tasks/venv tasks/unzip data src/process_data.py
 	source venv/bin/activate; python src/main.py --parse-data
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/parse_data
 
-tasks/plot_map: tasks/parse_data plots $(PYTHON_FILES)
+tasks/plot_map: tasks/parse_data tasks/venv plots $(PLOT_PYTHON_FILES)
 	source venv/bin/activate; python src/main.py --plot-map
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_map
 
-tasks/plot_distances: tasks/parse_data plots $(PYTHON_FILES)
+tasks/plot_distances: tasks/parse_data tasks/venv plots $(PLOT_PYTHON_FILES)
 	source venv/bin/activate; python src/main.py --plot-distances
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_distances
 
-tasks/plot_fir: tasks/parse_data plots $(PYTHON_FILES)
+tasks/plot_fir: tasks/parse_data tasks/venv plots $(PLOT_PYTHON_FILES)
 	source venv/bin/activate; python src/main.py --plot-fir
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_fir
 
-tasks/plot_frequency_spectrum: tasks/parse_data plots $(PYTHON_FILES)
+tasks/plot_frequency_spectrum: tasks/parse_data tasks/venv plots $(PLOT_PYTHON_FILES)
 	source venv/bin/activate; python src/main.py --plot-freq-spec
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_frequency_spectrum
+
+tasks/filter_signals: data tasks/parse_data tasks/venv
+	source venv/bin/activate; python src/main.py --filter-signals
+	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/filter_signals
+
+tasks/plot_sections: tasks/parse_data tasks/filter_signals tasks/venv $(PLOT_PYTHON_FILES)
+	source venv/bin/activate; python src/main.py --plot-sections
+	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_sections

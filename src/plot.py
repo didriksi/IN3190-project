@@ -4,6 +4,7 @@ import cartopy.crs as ccrs
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import datetime
 
 import signal_processing
 
@@ -151,7 +152,7 @@ def frequency_spectrum(fir, fir_label=None, side_by_side=False, filename=None):
         fir = [fir]
         fir_label = fir_label if (fir_label is None) else [fir_label]
 
-    dtft_fir = map(lambda h: np.abs(signal_processing.dtft(h)[0]), fir)
+    dtft_fir = map(lambda h: np.abs(signal_processing.dtft(h, fs=0.1)[1]), fir)
 
     fig, axs = plt.subplots(1, 1 if not side_by_side else len(fir),
                             figsize=(7, 4), sharey=side_by_side)
@@ -160,23 +161,56 @@ def frequency_spectrum(fir, fir_label=None, side_by_side=False, filename=None):
     for i, (single_dtft_fir, ax) in enumerate(zip(dtft_fir, axs_iter)):
         if fir_label is not None:
             if side_by_side:
-                ax.plot(single_dtft_fir)
+                ax.plot(*single_dtft_fir)
                 ax.set_title(fir_label[i])
             else:
-                ax.plot(single_dtft_fir, label=fir_label[i])
+                ax.plot(*single_dtft_fir, label=fir_label[i])
                 ax.legend()
         else:
-            ax.plot(single_dtft_fir)
+            ax.plot(*single_dtft_fir)
 
         ax.set_xlabel("$j$")
 
     axs_iter[0].set_ylabel("$|H(e^{j \\omega})|$")
 
     fig.suptitle("Absolute values of the frequency spectrums of the FIRs")
-    
 
     if filename is None:
         plt.show()
     else:
         plt.savefig(filename)
+        plt.close()
+
+
+def sections(signal_filenames, times, distances, plot_filename=None):
+    """Plot many signals from many different files, all transformed by filter 3.
+
+    Arguments:  
+        signal_filenames: Paths to numpy files with arrays for each signal.
+        times: 2-d array giving the times of each of the measurements.
+        distances: 1-d array stating how far away from Hunga Tunga each signal is
+                   from.
+        plot_filename: Path to location to save resulting image in. If None, as 
+                       default, it isn't saved just shown.
+    """
+    fig, ax = plt.subplots(1, 1, figsize=(7, 4))
+    
+    max_distance = np.max(distances)
+    for i, (signal_filename, _times, distance) in enumerate(zip(signal_filenames, times, distances)):
+        y = np.load(signal_filename)
+        # Remove measurements from before the event
+        keep_inds = _times > 4.92e06
+        scaled_y = (max_distance/100 * y[keep_inds]/max(1, np.max(y)) + distance)/1000
+        ax.plot(_times[keep_inds], scaled_y, color="black", alpha=0.7, linewidth=0.2)
+
+    ticks = np.linspace(np.min(times[0]), np.max(times[0]), 8)
+    ticklabels = [datetime.datetime.fromtimestamp(tick).strftime("%H:%M") for tick in ticks]
+    ax.set_xticks(ticks, labels=ticklabels)
+    ax.set_xlabel("Time")
+    ax.set_ylabel("Distance (km)")
+
+    if plot_filename is None:
+        plt.show()
+    else:
+        plt.savefig(plot_filename)
         plt.close()
