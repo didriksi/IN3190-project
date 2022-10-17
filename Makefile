@@ -100,3 +100,7 @@ tasks/filter_signals: data tasks/parse_data tasks/venv
 tasks/plot_sections: tasks/parse_data tasks/filter_signals tasks/venv $(PLOT_PYTHON_FILES)
 	source venv/bin/activate; python src/main.py --plot-sections
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_sections
+
+tasks/mark_arrival_time: tasks/parse_data tasks/filter_signals tasks/venv $(PLOT_PYTHON_FILES)
+	source venv/bin/activate; python src/main.py --mark-arrival-time
+	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/mark_arrival_time

@@ -214,3 +214,35 @@ def sections(signal_filenames, times, distances, plot_filename=None):
     else:
         plt.savefig(plot_filename)
         plt.close()
+
+
+def mark_arrival_time(station_id, signal_times, **signals):
+    """Use pyplot.ginput to mark the arrival time of the wave at a station.
+
+    Opens a plot, and lets the user click once to mark the arrival time of the
+    infrasound wave.
+
+    Arguments:
+        station_id: Index of the station to plot for
+        signal_times: 1-d slice of the 'times'-array in the processed data 
+                      npz-file
+        **signals: Named 1-d slice of the 'data'-array in the processed data
+                   npz-file, or processed versions of it.
+
+    Return:
+        Float indicating the arrival time estimated by the user.
+    """
+    fig, axs = plt.subplots(2, int(np.ceil(len(signals)/2)), figsize=(12, 7))
+
+    fig.suptitle(f"Station number {station_id}")
+
+    for ax, (signal_name, signal) in zip(axs.flat, signals.items()):
+        ax.plot(signal_times, signal)
+        ax.fill_between([signal_times[0], signal_times[-1]], 0, np.max(signal), color="xkcd:light green", alpha=0.4)
+        ax.fill_between([signal_times[0], signal_times[-1]], np.min(signal), 0, color="xkcd:burnt orange", alpha=0.4)
+        ax.set_title(signal_name)
+
+    arrival_time, height = plt.ginput()[0]
+    plt.close()
+    validness = 1 if height > 0 else height/np.max(np.abs(signal))
+    return arrival_time, validness
