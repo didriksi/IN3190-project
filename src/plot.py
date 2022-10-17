@@ -24,12 +24,12 @@ def geography(center_coordinates, other_coordinates, filename=None):
     ax = plt.axes(projection=projection)
     ax.stock_img()
     
-    ax.scatter(other_coordinates[1,:], other_coordinates[0,:], s=20, color="xkcd:bright blue")
-    ax.scatter([center_coordinates[0]], [center_coordinates[1]], marker="^", s=50, color="xkcd:brick red")
+    ax.scatter(other_coordinates[:,1], other_coordinates[:,0], marker="x", s=20, color="xkcd:bright blue", transform=ccrs.PlateCarree())
+    ax.scatter([center_coordinates[1]], [center_coordinates[0]], marker="^", s=50, color="xkcd:brick red", transform=ccrs.PlateCarree())
     
     ax.set_xticks([])
     ax.set_yticks([])
-    
+        
     if filename is None:
         plt.show()
     else:
