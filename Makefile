@@ -2,7 +2,7 @@
 
 
 ### List of all plots and data used directly in project.tex ###
-TASKS = tasks/venv tasks/unzip tasks/parse_data tasks/plot_map tasks/plot_distances tasks/plot_fir tasks/plot_frequency_spectrum tasks/filter_signals
+PLOTS = plots/map.pdf plots/distances.pdf plots/fir.pdf plots/freq_spec.pdf plots/sections.pdf plots/arrival_times.pdf
 
 ### Files used for compiling latex ###
 TEX_FILES = $(wildcard latex/*.tex)
@@ -15,25 +15,13 @@ PYTHON ?= python3
 ### Raw files already present ###
 RAW_FILES = $(wildcard data/raw/*)
 
-### Creating folders ###
-tasks:
-	mkdir tasks
-
-plots:
-	mkdir plots
-
-data:
-	mkdir data/raw
-	mkdir data/processed
-	mkdir data/processed/convolved
-
 ### Compile pdf from LaTeX ###
-report.pdf: $(TASKS) $(TEX_FILES) $(PYTHON_FILES)
-	cd latex && pdflatex report.tex
+report.pdf: $(PLOTS) $(TEX_FILES) $(PYTHON_FILES)
+	cd latex && pdflatex report && biber report && pdflatex report && pdflatex report
 	mv latex/report.pdf report.pdf
 
 preview: $(TEX_FILES)
-	cd latex && latexmk -pdf -pvc main.tex
+	cd latex && latexmk -pdf -pvc report.tex
 
 ### General commands ###
 .PHONY: all
@@ -61,39 +49,47 @@ clean:
 	@rm -f latex/report.fls
 
 ### Tasks ###
-tasks/venv: tasks requirements.txt
+tasks/make_folder_structure:
+	mkdir tasks
+	mkdir plots
+	mkdir data/raw
+	mkdir data/processed
+	mkdir data/processed/convolved
+	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/make_folder_structure
+
+tasks/venv: requirements.txt
 	pip install --upgrade pip
 	$(PYTHON) -m venv venv
 	source venv/bin/activate; pip install -r requirements.txt
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/venv
 
-tasks/unzip: tasks data
+tasks/unzip: tasks/make_folder_structure
 ifeq ($(strip $(RAW_FILES)),)
 	cd data/raw/ && unzip ../../project_data.zip
 endif
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/unzip
 
-tasks/parse_data: tasks tasks/venv tasks/unzip data src/process_data.py
+tasks/parse_data: tasks/make_folder_structure tasks/venv tasks/unzip data src/process_data.py
 	source venv/bin/activate; python src/main.py --parse-data
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/parse_data
 
-tasks/plot_map: tasks/parse_data tasks/venv plots $(PLOT_PYTHON_FILES)
+tasks/plot_map: tasks/parse_data tasks/venv $(PLOT_PYTHON_FILES)
 	source venv/bin/activate; python src/main.py --plot-map
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_map
 
-tasks/plot_distances: tasks/parse_data tasks/venv plots $(PLOT_PYTHON_FILES)
+tasks/plot_distances: tasks/parse_data tasks/venv $(PLOT_PYTHON_FILES)
 	source venv/bin/activate; python src/main.py --plot-distances
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_distances
 
-tasks/plot_fir: tasks/parse_data tasks/venv plots $(PLOT_PYTHON_FILES)
+tasks/plot_fir: tasks/parse_data tasks/venv $(PLOT_PYTHON_FILES)
 	source venv/bin/activate; python src/main.py --plot-fir
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_fir
 
-tasks/plot_frequency_spectrum: tasks/parse_data tasks/venv plots $(PLOT_PYTHON_FILES)
+tasks/plot_frequency_spectrum: tasks/parse_data tasks/venv $(PLOT_PYTHON_FILES)
 	source venv/bin/activate; python src/main.py --plot-freq-spec
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_frequency_spectrum
 
-tasks/filter_signals: data tasks/parse_data tasks/venv
+tasks/filter_signals: tasks/parse_data tasks/venv
 	source venv/bin/activate; python src/main.py --filter-signals
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/filter_signals
 
@@ -108,3 +104,17 @@ tasks/mark_arrival_time: tasks/parse_data tasks/filter_signals tasks/venv $(PLOT
 tasks/plot_arrival_time: tasks/parse_data tasks/filter_signals tasks/venv $(PLOT_PYTHON_FILES)
 	source venv/bin/activate; python src/main.py --plot-arrival-times
 	echo "Completed at" $$(date +%Y-%m/%d_%H:%M:%S) > tasks/plot_arrival_time
+
+### Plots needed for the report ###
+plots/map.pdf: tasks/plot_map
+
+plots/distances.pdf: tasks/plot_distances
+
+plots/fir.pdf: tasks/plot_fir
+
+plots/freq_spec.pdf: tasks/plot_frequency_spectrum
+
+plots/sections.pdf: tasks/plot_sections
+
+plots/arrival_times.pdf: tasks/plot_arrival_time
+

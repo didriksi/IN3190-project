@@ -27,6 +27,9 @@ def geography(center_coordinates, other_coordinates, filename=None):
     ax.scatter(other_coordinates[1,:], other_coordinates[0,:], s=20, color="xkcd:bright blue")
     ax.scatter([center_coordinates[0]], [center_coordinates[1]], marker="^", s=50, color="xkcd:brick red")
     
+    ax.set_xticks([])
+    ax.set_yticks([])
+    
     if filename is None:
         plt.show()
     else:
@@ -139,7 +142,7 @@ def frequency_spectrum(fir, fir_label=None, side_by_side=False, filename=None):
         else:
             ax.plot(*single_dtft_fir)
 
-        ax.set_xlabel("$j$")
+        ax.set_xlabel("$Hz$")
 
     axs_iter[0].set_ylabel("$|H(e^{j \\omega})|$")
 
@@ -167,7 +170,7 @@ def sections(signal_filenames, times, distances, plot_filename=None):
     
     max_distance = np.max(distances)
     for i, (signal_filename, _times, distance) in enumerate(zip(signal_filenames, times, distances)):
-        y = np.load(signal_filename)
+        y = np.abs(np.load(signal_filename))
         # Remove measurements from before the event
         keep_inds = _times > 4.92e06
         scaled_y = (max_distance/100 * y[keep_inds]/max(1, np.max(y)) + distance)/1000
@@ -236,17 +239,15 @@ def arrival_time_vs_distance(distances, arrival_times, alphas=None,
         filename: Path to location to save resulting image in. If None, as 
                   default, it isn't saved just shown.
     """
-    if alphas is None:
-        alphas = np.ones_like(distances)
-
     fig, ax = plt.subplots(1, 1, figsize=(7, 4))
     fig.suptitle("Arrival times for different stations. Alpha denotes confidence in label")
 
     colors = (np.array([117, 187, 253, 1])/256)[np.newaxis,:].repeat(len(distances), axis=0)
-    colors[:,3] = alphas
+    if alphas is not None:
+        colors[:,3] = alphas
     
     if polynomial is not None:
-        label = "$" + " + ".join([f"{coef:.4g} \\cdot x^{i}" for i, coef in enumerate(polynomial)]) +  "$"
+        label = "$" + " + ".join([f"{coef:.4g} \\cdot x^{i}" for i, coef in enumerate(polynomial.convert().coef)]) +  "$"
         ax.plot(arrival_times, polynomial(arrival_times), label=label)
 
     ax.scatter(arrival_times, distances, c=colors)
@@ -263,4 +264,3 @@ def arrival_time_vs_distance(distances, arrival_times, alphas=None,
     else:
         plt.savefig(filename)
         plt.close()
-

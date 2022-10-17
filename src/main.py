@@ -121,8 +121,6 @@ def main():
         data = processed_data["data"]
         times = processed_data["times"]
 
-        
-
         load_convolved = lambda h, station_id: np.load(os.path.join(convolved_dir, f"h{h}_x{station_id:03}.npy"))
         
         if os.path.exists(arrival_times_filename):
@@ -154,17 +152,17 @@ def main():
             
         valid_entries = arrival_times > 1.642218e09
         arrival_times = arrival_times[valid_entries]
-        distances = distances[valid_entries]
+        distances = distances[valid_entries]/1000
         weights = weights[valid_entries]
-        
 
         poly = np.polynomial.polynomial.Polynomial.fit(arrival_times, distances,
                                                        deg=1, w=weights)
+        print(np.max(arrival_times) - np.min(arrival_times), np.max(distances) - np.min(distances))
+        print((np.max(distances) - np.min(distances)) / (np.max(arrival_times) - np.min(arrival_times)))
 
         plot_filename = os.path.join(constants.PLOTS_DIR, "arrival_times.pdf")
         plot.arrival_time_vs_distance(distances, arrival_times, weights,
                                       poly, plot_filename)
-
 
 
 if __name__ == "__main__":
