@@ -23,7 +23,6 @@ plots:
 	mkdir plots
 
 data:
-	mkdir data
 	mkdir data/raw
 	mkdir data/processed
 	mkdir data/processed/convolved
@@ -46,7 +45,8 @@ clean:
 	@rm -f report.pdf
 	@rm -f -rf plots
 	@rm -f -rf venv
-	@rm -f -rf data
+	@rm -f -rf data/raw
+	@rm -f -rf data/processed
 	@rm -f -rf tasks
 	@rm -f -rf src/__pycache__
 	@rm -f latex/report.log

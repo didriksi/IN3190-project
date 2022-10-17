@@ -115,9 +115,9 @@ def main():
         times = processed_data["times"]
 
         arrival_times_filename = os.path.join(constants.ROOT_DIR, "data",
-                                              "processed", "arrival_times.npy")
+                                              "arrival_times", "arrival_times.npy")
         valids_filename = os.path.join(constants.ROOT_DIR, "data",
-                                       "processed", "valids.npy")
+                                       "arrival_times", "valids.npy")
 
         load_convolved = lambda h, station_id: np.load(os.path.join(convolved_dir, f"h{h}_x{station_id:03}.npy"))
         
